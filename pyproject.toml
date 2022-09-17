@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "hinterland-hack-job-platform"
+version = "0.1.0"
+description = ""
+authors = ["Tom Stein <dev@tomstein.me>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.12.2"
+numpy = "^1.23.3"
+pandas = "^1.4.4"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
