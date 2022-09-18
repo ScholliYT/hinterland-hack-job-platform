@@ -22,6 +22,9 @@ st.title('Skill Similarity Job Search')
 
 df_orig = pd.read_pickle("df_eng.pickle")
 
+if 'skill_values' not in st.session_state:
+    st.session_state['skill_values'] = {}
+
 with st.sidebar:
     st.header("Configuration")
     st.text_input(label="Data URL", value="https://jobboerse.phoenixcontact.com/jobPublication/list.xml", disabled=True)
@@ -90,11 +93,8 @@ df_skills = df_bow_profile.sum().sort_values(ascending=False)
 
 df_matches = data.copy()
 
-query_vec = {
-    # "programming": 0.8,
-    # "computer science": 1.0,
-    # "english": 0.9
-}
+def reset_skill_selection():
+    st.session_state['skill_values'].clear()
 
 col1, col2 = st.columns(2, gap="large")
 
@@ -104,6 +104,7 @@ with col1:
     
     s = df_bow_profile.sum().sort_values(ascending=False).copy()
     skill_search = st.text_input("Filter skills", placeholder="e.g. business")
+    st.button("Reset", on_click=reset_skill_selection)
     df_skills = pd.DataFrame(s).reset_index()
     if skill_search:
         df_skills = df_skills[df_skills["index"].str.contains(skill_search, case=False)]
@@ -113,13 +114,17 @@ with col1:
 
     skills = df_skills.head(20).to_numpy()
     for name, count in skills:
-        slider = st.slider(name + f" [{count}]", min_value=0.0, max_value=1.0, value=0.5)
-        query_vec[name] = slider
+        if name in st.session_state['skill_values']:
+            value = float(st.session_state['skill_values'][name])
+        else:
+            value = 0.5
+        slider = st.slider(name + f" [{count}]", min_value=0.0, max_value=1.0, value=value)
+        st.session_state['skill_values'][name] = slider
 
 
 df_query_vec = pd.DataFrame(columns=df_bow_profile.columns)
 df_query_vec.loc[0,:] = 0.5
-for k,v in query_vec.items():
+for k,v in st.session_state['skill_values'].items():
   df_query_vec.loc[0, k] = v  
 
 
