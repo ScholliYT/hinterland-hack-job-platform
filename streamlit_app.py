@@ -140,7 +140,7 @@ with col2:
     # st.write(query_vec)
 
     st.subheader("Job Results")
-    st.write("Based on your selected skill, you might be interesed in the following jobs.")
+    st.write("Based on your selected skill, you might be interesed in the following jobs that require similar skills. Please note that the skills are not always accurate and perfect matches may not be on the top most spot.")
 
     df_matches["distances"] = distances.reshape((-1))
     df_matches = df_matches.reset_index()
