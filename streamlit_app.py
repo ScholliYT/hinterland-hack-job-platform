@@ -27,8 +27,8 @@ if 'skill_values' not in st.session_state:
 
 with st.sidebar:
     st.header("Configuration")
-    st.text_input(label="Data URL", value="https://jobboerse.phoenixcontact.com/jobPublication/list.xml", disabled=True)
-    data_count = st.slider("Jobcount", min_value=0, max_value=df_orig.shape[0], value=50)
+    data_url = st.text_input(label="Data URL", value="https://jobboerse.phoenixcontact.com/jobPublication/list.xml", disabled=True)
+    data_count = st.slider("Jobcount", min_value=0, max_value=df_orig.shape[0], value=300)
     show_raw_data = st.checkbox('Show raw data for debugging')
 
 def load_job_listings(count: int):
@@ -37,7 +37,10 @@ def load_job_listings(count: int):
 
 data_load_state = st.text('Loading job listings...')
 data = load_job_listings(int(data_count))
-data_load_state.text(f"Done loading {data.shape[0]} job listings!")
+data_domain = str(data_url.split("/")[2])
+data_load_state.text(f"Done loading {data.shape[0]} job listings from {data_domain}!")
+st.text("")
+
 
 if show_raw_data:
     st.subheader('Raw data')
@@ -112,7 +115,7 @@ with col1:
     if df_skills.shape[0] == 0:
         st.write("No skill found! Please change the search term.")
 
-    skills = df_skills.head(20).to_numpy()
+    skills = df_skills.head(15).to_numpy()
     for name, count in skills:
         if name in st.session_state['skill_values']:
             value = float(st.session_state['skill_values'][name])
@@ -137,6 +140,7 @@ with col2:
     # st.write(query_vec)
 
     st.subheader("Job Results")
+    st.write("Based on your selected skill, you might be interesed in the following jobs.")
 
     df_matches["distances"] = distances.reshape((-1))
     df_matches = df_matches.reset_index()
@@ -154,7 +158,7 @@ with col2:
     # Map of Jobs
     st.markdown("""---""")
     st.subheader("Map of jobs")
-    st.text("Explore the map of jobs to find jobs with similar descritions.")
+    st.write("Explore the map of jobs to find jobs with similar descriptions.")
 
     colors = np.zeros((df_matches.shape[0]))
     colors[results.index.values] = 1
