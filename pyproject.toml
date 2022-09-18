@@ -14,8 +14,6 @@ scipy = "^1.9.1"
 scikit-learn = "^1.1.2"
 nltk = "^3.7"
 matplotlib = "^3.6.0"
-skillNer = "^1.0.3"
-en-core-web-lg = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.4.0/en_core_web_lg-3.4.0.tar.gz#egg=en_core_web_lg"}
 
 [tool.poetry.dev-dependencies]
 
