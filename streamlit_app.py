@@ -3,12 +3,14 @@ import pandas as pd
 import numpy as np
 
 from sklearn.metrics.pairwise  import cosine_similarity, euclidean_distances
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
 from matplotlib import pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from typing import List
+from umap import UMAP
+import plotly.express as px
 
 
 import nltk
@@ -38,6 +40,23 @@ if show_raw_data:
     st.subheader('Raw data')
     st.write(data.columns)
     st.write(data)
+
+
+def get_tfidf_array(texts):
+  min3chars_word = r"(?u)\b[a-zA-ZäöüÄÖÜß][a-zA-ZäöüÄÖÜß][a-zA-ZäöüÄÖÜß]+\b"
+  german_stop_words = stopwords.words('german')
+  tv = TfidfVectorizer(stop_words=german_stop_words, min_df=0, token_pattern=min3chars_word)
+  count_matrix = tv.fit_transform(texts)
+  tfidf_array = count_matrix.toarray()
+  return tfidf_array
+
+
+tfidf_array = get_tfidf_array(data["position_cleaned"].array)
+
+umap_2d = UMAP(n_components=2, init='random', random_state=0)
+proj_2d = umap_2d.fit_transform(tfidf_array)
+
+
 
 english_stopwords = stopwords.words('english')
 cv = CountVectorizer(stop_words=english_stopwords, analyzer=lambda x: x, binary=True)
@@ -115,7 +134,8 @@ with col2:
     st.subheader("Job Results")
 
     df_matches["distances"] = distances.reshape((-1))
-    results = df_matches.sort_values(by="distances", ascending=True).head(20)
+    df_matches = df_matches.reset_index()
+    results = df_matches.sort_values(by="distances", ascending=True).head(10)
     st.write(results.loc[:, ["distances", "position", "profile_annotations_matches", "jobPublicationURL"]])
 
 
@@ -123,3 +143,28 @@ with col2:
         st.subheader(row["position"])
         url = row["jobPublicationURL"]
         st.markdown(f"[Open job listing]({url})")
+
+
+
+    # Map of Jobs
+    st.markdown("""---""")
+    st.subheader("Map of jobs")
+    st.text("Explore the map of jobs to find jobs with similar descritions.")
+
+    colors = np.zeros((df_matches.shape[0]))
+    colors[results.index.values] = 1
+    
+    colors = [["blue", "red"][int(v)] for v in colors]
+
+    our_color_discrete_map={
+                    "unknown": "rgba(180, 180, 180, 0.24)",
+                    0: "rgba(5, 192, 5, 0.74)",
+                    1: "rgba(255, 112, 0, 0.74)",
+                  }
+
+    fig_2d = px.scatter(
+        proj_2d, x=0, y=1,
+        hover_data=[data["position"].values],
+        color=colors
+    )
+    st.plotly_chart(fig_2d)
